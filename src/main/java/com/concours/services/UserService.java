@@ -11,8 +11,8 @@ public interface UserService {
 	User createUser(User u);
 	User get(Long id);
 	boolean exist(User u);
-	User login(String cin, String password);
 	User updateUser(User u);
+
 	
 
 	

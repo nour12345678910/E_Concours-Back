@@ -22,36 +22,46 @@ import com.concours.Repository.EtablissementRepository;
 import com.concours.Repository.ReclamationRepository;
 @CrossOrigin("*")
 
+
+
+
 @RestController
-@RequestMapping("/api/hhh")
+@RequestMapping("/api/response")
 public class ResponseController {
     
+	
     @Autowired
     private JavaMailSender javaMailSender;
+    
     
     @Autowired
     private ReclamationRepository reclamationRepository;
     
+    
     @Autowired
 	private EtablissementRepository etablissementRepository;
     
-    @PostMapping("/add/{id}")
+    
+    
+    
+    @PostMapping("/answer/{id}")
     public ResponseEntity<Reclamation> sendResponse(@PathVariable(value = "id") Long reclamationId, @RequestBody Response response) {
         Reclamation reclamation = reclamationRepository.findById(reclamationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reclamation", "id", reclamationId));
 
         
-     // Get etablissement
+     // Get l'etablissement
 	    List<Etablissement> etablissements = etablissementRepository.findAll();
 
-	    // Create a string of etablissement presents
+	    // Creer  string d'etablissement present
 	    StringBuilder sb = new StringBuilder();
 	    for (Etablissement e : etablissements) {
 	        sb.append(e.getNom());
 	    }
 	    String nomsEtablissements = sb.toString();
         
-        
+	    
+        //envoyer le mail de réponse à l'utilisateur
         String toEmail = reclamation.getEmail();
         String subject = "الإجابة عن تساؤلك  #" + reclamation.getId();
         String text = ", " + reclamation.getNom() + " إلى السيد(ة) \n\n"
@@ -61,6 +71,8 @@ public class ResponseController {
                 + "مع كل إحتراماتنا,\n"
                 + nomsEtablissements;
 
+        
+        
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("centrenationalinformatique@gmail.com");
         message.setTo(toEmail);
@@ -68,8 +80,13 @@ public class ResponseController {
         message.setText(text);
         javaMailSender.send(message);
 
+        
+        
+        //mettre la réponse à la réclamation 
         reclamation.setResponse(response);
         Reclamation savedReclamation = reclamationRepository.save(reclamation);
         return ResponseEntity.ok(savedReclamation);
     }
+    
+    
 }

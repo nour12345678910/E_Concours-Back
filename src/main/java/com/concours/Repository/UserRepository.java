@@ -12,8 +12,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findFirstByCin(String cin);//inscription
 	User findFirstByCinAndMotdepasse(String cin, String motdepasse);//login
 	User findById(long id);
-	User findByCin(String cin);
     User findByEmail(String email);
+	User findByCin(String cin);
+
+
 
 	
 

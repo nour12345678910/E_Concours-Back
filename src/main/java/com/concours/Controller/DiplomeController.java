@@ -17,14 +17,18 @@ import com.concours.Repository.DiplomeRepository;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/candidats/{candidatId}/diplomes")
+@RequestMapping("api/diplomes")
 public class DiplomeController {
     
+	
     @Autowired
     private DiplomeRepository diplomeRepository;
     
+    
     @Autowired
     private CandidatInfoRepository candidatRepository;
+    
+    
     
     @PostMapping
     public Diplome createDiplome(@PathVariable Long candidatId, @RequestBody Diplome diplome) {

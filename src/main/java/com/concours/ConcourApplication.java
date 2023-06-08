@@ -3,6 +3,7 @@ package com.concours;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+
 @SpringBootApplication
 public class ConcourApplication {
 
@@ -10,4 +11,6 @@ public class ConcourApplication {
 		SpringApplication.run(ConcourApplication.class, args);
 	}
 
+	
+	
 }

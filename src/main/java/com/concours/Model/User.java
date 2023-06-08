@@ -54,8 +54,11 @@ public class User  {
 	@Lob 
 	private byte[] photo;
 	
+
 	
 	
+
+
 
 
 	public User(Long id, String cin, String nom, String prenom, String telephone, String motdepasse, String email,

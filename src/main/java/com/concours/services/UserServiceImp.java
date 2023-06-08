@@ -1,11 +1,18 @@
 package com.concours.services;
 
 import java.util.List;
+
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.concours.Model.User;
 import com.concours.Repository.CandidatInfoRepository;
@@ -13,6 +20,13 @@ import com.concours.Repository.UserRepository;
 
 @Service
 public class UserServiceImp implements UserService {
+	
+
+    @Value("${app.jwtSecret}")
+    private String jwtSecret;
+
+    @Value("${app.jwtExpirationMs}")
+    private int jwtExpirationMs;
 
 	@Autowired
 	UserRepository userRepository;
@@ -20,39 +34,17 @@ public class UserServiceImp implements UserService {
 	@Autowired
 	CandidatInfoRepository cInfoRepo;
 	
+
 	
-	
+
     @Override
-    public User login(String cin, String motdepasse) {
-        // Retrieve the user entity based on the CIN from the repository
-        User user = userRepository.findByCin(cin);
-
-        // Check if the retrieved user entity is not null and the password matches
-        if (user != null && BCrypt.checkpw(motdepasse, user.getMotdepasse())) {
-            return user;
-        } else {
-            return null;
-        }
+    public User createUser(User u) {
+        String hashedPassword = BCrypt.hashpw(u.getMotdepasse(), BCrypt.gensalt());
+        u.setMotdepasse(hashedPassword);
+        u = userRepository.save(u);
+        return u;
     }
-	
-	
-	
-	
-
-	//@Override
-	//public User createUser(User u) {
-		//u.setRole(ERole.CANDIDAT);
-		//u = userRepository.save(u);
-		//return u;
-//	}
-	@Override
-	public User createUser(User u) {
-		String hashedPassword=BCrypt.hashpw(u.getMotdepasse(), BCrypt.gensalt());
-	    u.setMotdepasse(hashedPassword);
-		//u.setRole(ERole.CANDIDAT);
-		u = userRepository.save(u);
-		return u;
-	}
+ 
 
 	
 	@Override
@@ -113,6 +105,12 @@ public class UserServiceImp implements UserService {
 	}
 
 
+
+
+
+
+
+  
 	
 	
 }

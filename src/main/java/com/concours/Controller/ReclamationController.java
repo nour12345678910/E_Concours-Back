@@ -17,6 +17,8 @@ import com.concours.Model.Reclamation;
 import com.concours.Repository.ReclamationRepository;
 import com.concours.services.ReclamationService;
 
+
+
 @CrossOrigin("*")
 @RequestMapping("/api/reclamation")
 @RestController
@@ -26,25 +28,29 @@ public class ReclamationController {
 	@Autowired
 	ReclamationService rs;
 	
+	
 	@Autowired
 	ReclamationRepository rr;
 	
 	
 	
 	
-	
-	@GetMapping("/all")
-	public ResponseEntity<List<Reclamation>> getAllReclamation(){
-		 List<Reclamation> r=rs.findAll();
-		 return new ResponseEntity<>(r, HttpStatus.OK);
-	    }
-	
-	
-	@PostMapping("/add")
-	 public ResponseEntity<Reclamation> ajouterReclamation(@RequestBody Reclamation r) {
-		Reclamation reclamation=rs.add(r);
-	    	return new ResponseEntity<>(reclamation, HttpStatus.CREATED);
+		@PostMapping("/add")
+		 public ResponseEntity<Reclamation> ajouterReclamation(@RequestBody Reclamation r) {
+			Reclamation reclamation=rs.add(r);
+		    	return new ResponseEntity<>(reclamation, HttpStatus.CREATED);
 		}
+	
+	
+	
+		@GetMapping("/all")
+		public ResponseEntity<List<Reclamation>> getAllReclamation(){
+			 List<Reclamation> r=rs.findAll();
+			 return new ResponseEntity<>(r, HttpStatus.OK);
+		}
+	
+	
+	
 	 
 	   
 	   
@@ -52,14 +58,16 @@ public class ReclamationController {
 		 public ResponseEntity<Reclamation> getReclamation(@PathVariable("id") Long id){
 			Reclamation reclamation=rs.findById(id);
 			 return new ResponseEntity<>(reclamation, HttpStatus.OK);
-		    }
+		 }
 	
+		
+		
 		
 		 @DeleteMapping("/delete/{id}")
 		    public ResponseEntity<Reclamation> deleteReclamation(@PathVariable("id") Long id){
 		    	rs.deleteById(id);
 		    	return new ResponseEntity<>( HttpStatus.OK);
-		    }
+		 }
 	
 	
 }

@@ -1,18 +1,16 @@
 package com.concours.Controller;
-
 import java.util.Base64;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import org.apache.commons.lang3.RandomStringUtils;
-import java.security.SecureRandom;
-
 import java.util.Map;
-import java.util.UUID;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,49 +21,69 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
 import com.concours.Model.Etablissement;
 import com.concours.Model.User;
 import com.concours.Repository.EtablissementRepository;
 import com.concours.Repository.UserRepository;
 import com.concours.enums.ERole;
 import com.concours.services.UserService;
-import java.io.IOException;
-
-
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import java.io.IOException;
+import java.security.SecureRandom;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+
+
+
+
 
 @CrossOrigin("*")
 @RequestMapping("/api/user")
 @RestController
 
-
-
 public class UserController {
+	
 	
 	@Autowired
 	JavaMailSender mailSender;
 
+	
 	@Autowired
 	UserService userService;
+	
 	
 	@Autowired
 	UserRepository userRepository;
 	
+	
 	@Autowired
 	private EtablissementRepository etablissementRepository;
+	
 	
 	@Autowired
 	private JavaMailSender emailSender;
 	
 	
-	@PostMapping
+	@Value("${app.jwtSecret}")
+	private String jwtSecret;
+
+	
+	@Value("${app.jwtExpirationMs}")
+	private int jwtExpirationMs;
+
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
+	
+	
+	
+	
+
+	
+	@PostMapping("/signUp")
 	public ResponseEntity<?> save(@RequestParam("cin") String cin, @RequestParam("nom") String nom,
 	        @RequestParam("prenom") String prenom, @RequestParam("telephone") String telephone,
 	        @RequestParam("motdepasse") String motdepasse, @RequestParam("email") String email,
@@ -80,30 +98,34 @@ public class UserController {
 	        u.setEmail(email);
 	        u.setRole(role);
 	        u.setPhoto(photo.getBytes());
-
+	        
+	        
+	        //vérifier l'existance du l'utilisateur à travers de son CIN 
 	        if (userService.exist(u)) {
-	            return ResponseEntity.badRequest().body("user_existant");
-
+	            return ResponseEntity.badRequest().body("User already exists");
 	        } else {
+
+	        	
+	        	//l'enregistrement de l'utilisateur avec un mot de passe crypté 
 	            User savedUser = userService.createUser(u);
 
-	            // Get  etablissement
+	            // Get l'etablissement
 	            List<Etablissement> etablissements = etablissementRepository.findAll();
 
-	            // Create a string of etablissement presents
+	            //l'etablissement présent 
 	            StringBuilder sb = new StringBuilder();
 	            for (Etablissement e : etablissements) {
 	                sb.append(e.getNom());
 	            }
 	            String nomsEtablissements = sb.toString();
 
-	            // Send an email to the registered user
+	            // envoyer un mail de confirmation de l'inscription à l'utilisateur 
 	            MimeMessage message = mailSender.createMimeMessage();
 	            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 	            helper.setTo(email);
-	            helper.setSubject(" إعلام بتسجيل الحساب في  " + nomsEtablissements + " \r\n");
-	            helper.setText("إلى السيد(ة) " + nom + " " + prenom + ",\n يعلم  "+nomsEtablissements+"  السيد(ة)  " + nom + " " + prenom
-	                    + " صاحب(ة) بطاقة التعريف عدد " + cin + "  بإتمام عملية تسجيل الحساب بنجاح\r\n" + "\r\n " + "\r\n"
+	            helper.setSubject("إعلام بتسجيل الحساب في " + nomsEtablissements + "\r\n");
+	            helper.setText("إلى السيد(ة) " + nom + " " + prenom + ",\n يعلم " + nomsEtablissements + " السيد(ة) " + nom + " " + prenom
+	                    + " صاحب(ة) بطاقة التعريف عدد " + cin + " بإتمام عملية تسجيل الحساب بنجاح\r\n" + "\r\n " + "\r\n"
 	                    + "\r\n" + "\r\n" + "");
 	            mailSender.send(message);
 
@@ -117,6 +139,58 @@ public class UserController {
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	@PostMapping("/signIn")
+	public ResponseEntity<?> login(String cin, String motdepasse) {
+		
+	    //chercher l'utilisateur qui a le CIN correspondante pour vérifier son présence 
+	    User user = userRepository.findByCin(cin);
+	    
+	    if (user == null) {
+			return ResponseEntity.badRequest().body("Invalid username or password");
+
+	    }
+
+	    // Valider le mot de passe 
+	    if (!passwordEncoder.matches(motdepasse, user.getMotdepasse())) {
+			return ResponseEntity.badRequest().body("Invalid username or password");
+	    }
+
+	    // Generer un  JWT token 
+	    Date expirationDate = new Date(System.currentTimeMillis() + jwtExpirationMs);
+	    String token = Jwts.builder()
+	            .setSubject(user.getId().toString())
+	            .setIssuedAt(new Date())
+	            .setExpiration(expirationDate)
+	            .signWith(SignatureAlgorithm.HS512, jwtSecret)
+	            .compact();
+
+	    // Create a JSON response object
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("token", token);
+	    response.put("user", user);
+	    return ResponseEntity.ok(user);
+	    
+	}	
+	
+	
+	
+	
+	
+	
+	
+	@PutMapping("/update")
+    public ResponseEntity<User> updateUser(@RequestBody User user){
+    	User upUser=userService.updateUser(user);
+    	return new ResponseEntity<>(upUser, HttpStatus.OK);
+    }
+
+
 	
 	
 	
@@ -145,44 +219,10 @@ public class UserController {
 	    }
 	    return userService.updateUser(user);
 	}
-	
-	
-	@PutMapping("/update")
-    public ResponseEntity<User> updateUser(@RequestBody User user){
-    	User upUser=userService.updateUser(user);
-    	return new ResponseEntity<>(upUser, HttpStatus.OK);
-    }
 
 	
 	
 	
-
-	
-	  @PostMapping("/login")
-	    public ResponseEntity<?> login(@RequestParam String cin, @RequestParam String motdepasse) {
-
-	        User user = userService.login(cin, motdepasse);
-
-	        if (user == null) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid CIN or password");
-	        }
-
-	        // Create and return a JWT token or session ID here
-	        // ...
-
-	        return ResponseEntity.ok(user);
-	    }
-	
-	@GetMapping("/{id}")
-	public ResponseEntity<?> get(@PathVariable Long id) {
-		try {
-			return ResponseEntity.ok(userService.get(id));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-	}
-
 	
 	
 	@GetMapping("/all")
@@ -194,8 +234,20 @@ public class UserController {
 	
 	
 	
+	
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<?> get(@PathVariable Long id) {
+		try {
+			return ResponseEntity.ok(userService.get(id));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
 
 
+	
 
 	
 	
@@ -205,15 +257,19 @@ public class UserController {
 	public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
 	    String email = request.get("email");
 
-	    
+	    // Générer un nouveau mot de passe aléatoire
 	    SecureRandom random = new SecureRandom();
 	    byte[] bytes = new byte[4];
 	    random.nextBytes(bytes);
 	    String encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
 	    String newPassword;
+	    
+	    // découpage de mot de passe aléatoire et obtenir les 8 premiers caractères
 	    try {
 	        newPassword = encoded.substring(0, 8);
-	    } catch (StringIndexOutOfBoundsException e) {
+	    } 
+	    //Si la chaîne est trop courte, le mot de passe aléatoire complet est utilisé
+	    catch (StringIndexOutOfBoundsException e) {
 	        newPassword = encoded;
 	    }
 
@@ -242,14 +298,7 @@ public class UserController {
 	    return ResponseEntity.ok("Password reset successful");
 	}
 
-	@Configuration
-	class WebMvcConfig implements WebMvcConfigurer {
-	    @Bean
-	    public BCryptPasswordEncoder passwordEncoder() {
-	        return new BCryptPasswordEncoder();
-	    }
-	}
-	
+
 	
 	
 	
