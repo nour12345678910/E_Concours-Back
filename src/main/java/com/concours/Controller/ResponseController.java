@@ -2,6 +2,7 @@ package com.concours.Controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -50,15 +51,10 @@ public class ResponseController {
                 .orElseThrow(() -> new ResourceNotFoundException("Reclamation", "id", reclamationId));
 
         
-     // Get l'etablissement
-	    List<Etablissement> etablissements = etablissementRepository.findAll();
-
-	    // Creer  string d'etablissement present
-	    StringBuilder sb = new StringBuilder();
-	    for (Etablissement e : etablissements) {
-	        sb.append(e.getNom());
-	    }
-	    String nomsEtablissements = sb.toString();
+     // Get etablissement
+	    Optional<Etablissement> optionalEtablissement = etablissementRepository.findById(1L);
+	        Etablissement etablissement = optionalEtablissement.get();
+	        String nomsEtablissements = etablissement.getNom();
         
 	    
         //envoyer le mail de réponse à l'utilisateur

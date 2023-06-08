@@ -107,14 +107,12 @@ public class CandidatController {
 	    //récupérer le concours qui a le concoursId correspondant 
 	    Concours concours = concoursRepository.findById(concoursId).orElse(null);
 
-	    // Get etablissement
-	    List<Etablissement> etablissements = etablissementRepository.findAll();
-
-	    // Create a string of etablissement present
-	    StringBuilder sb = new StringBuilder();
-	    for (Etablissement e : etablissements) {
-	        sb.append(e.getNom());
-	    }	    String nomsEtablissements = sb.toString();
+	 // Get etablissement
+	    Optional<Etablissement> optionalEtablissement = etablissementRepository.findById(1L);
+	        Etablissement etablissement = optionalEtablissement.get();
+	        String nomsEtablissements = etablissement.getNom();
+	    
+	    
 
 	    //Récuperer l'utilisateur qui a le userId
 	    User user = userRepository.findById(userId).orElse(null);
@@ -153,14 +151,10 @@ public class CandidatController {
 	   List<User> users = emailRequest.getUsers();
 	   List<String> candidateEmails = emailRequest.getCandidateEmails();
 	     
-	   //récupérer l'etablissement 
-	List<Etablissement> etablissements = etablissementRepository.findAll();
-	StringBuilder sb = new StringBuilder();
-	   for (Etablissement e : etablissements) {
-	       sb.append(e.getNom());
-	   }
-	   
-	   String nomsEtablissements = sb.toString();
+	// Get etablissement
+	    Optional<Etablissement> optionalEtablissement = etablissementRepository.findById(1L);
+	        Etablissement etablissement = optionalEtablissement.get();
+	        String nomsEtablissements = etablissement.getNom();
 	   
 	   //récuperer le concours correspondant
 	  Optional<Concours> optionalConcours = concoursRepository.findById(concoursId);
@@ -325,14 +319,9 @@ public class CandidatController {
 	       
 	       
 	    // Get etablissement
-		    List<Etablissement> etablissements = etablissementRepository.findAll();
-
-		    // Create a string of etablissement presents
-		    StringBuilder sb = new StringBuilder();
-		    for (Etablissement e : etablissements) {
-		        sb.append(e.getNom());
-		    }
-		    String nomsEtablissements = sb.toString();
+		    Optional<Etablissement> optionalEtablissement = etablissementRepository.findById(1L);
+		        Etablissement etablissement = optionalEtablissement.get();
+		        String nomsEtablissements = etablissement.getNom();
 	       
 
 	       // Get the user associated with the candidat
@@ -403,14 +392,9 @@ public class CandidatController {
 	       
 	       
 	    // Get etablissement
-		    List<Etablissement> etablissements = etablissementRepository.findAll();
-
-		    // Create a string of etablissement presents
-		    StringBuilder sb = new StringBuilder();
-		    for (Etablissement e : etablissements) {
-		        sb.append(e.getNom());
-		    }
-		    String nomsEtablissements = sb.toString();
+		    Optional<Etablissement> optionalEtablissement = etablissementRepository.findById(1L);
+		        Etablissement etablissement = optionalEtablissement.get();
+		        String nomsEtablissements = etablissement.getNom();
 	       
 
 	       // Get the user associated with the candidat

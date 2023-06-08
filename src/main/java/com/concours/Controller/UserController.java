@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.springframework.http.HttpStatus;
@@ -109,15 +111,13 @@ public class UserController {
 	        	//l'enregistrement de l'utilisateur avec un mot de passe crypté 
 	            User savedUser = userService.createUser(u);
 
-	            // Get l'etablissement
-	            List<Etablissement> etablissements = etablissementRepository.findAll();
-
-	            //l'etablissement présent 
-	            StringBuilder sb = new StringBuilder();
-	            for (Etablissement e : etablissements) {
-	                sb.append(e.getNom());
-	            }
-	            String nomsEtablissements = sb.toString();
+	         // Get etablissement
+	    	    Optional<Etablissement> optionalEtablissement = etablissementRepository.findById(1L);
+	    	        Etablissement etablissement = optionalEtablissement.get();
+	    	        String nomsEtablissements = etablissement.getNom();
+	        
+	            
+	            
 
 	            // envoyer un mail de confirmation de l'inscription à l'utilisateur 
 	            MimeMessage message = mailSender.createMimeMessage();

@@ -87,7 +87,7 @@ public class EtablissementController {
 	
 	   
 	   
-		@GetMapping("{id}")
+		@GetMapping("/{id}")
 		 public ResponseEntity<Etablissement> getEtab(@PathVariable("id") Long id){
 			Etablissement etablissement=es.findById(id);
 			return new ResponseEntity<>(etablissement, HttpStatus.OK);
