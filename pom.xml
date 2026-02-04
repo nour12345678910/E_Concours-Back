@@ -82,17 +82,16 @@
 
 	<repositories>
 		<repository>
-			<id>central</id>
-			<url>http://repo1.maven.org/maven2/</url>
-			<releases><enabled>true</enabled></releases>
-			<snapshots><enabled>false</enabled></snapshots>
+			<id>alimaven</id>
+			<name>aliyun maven</name>
+			<url>https://maven.aliyun.com/repository/public</url>
 		</repository>
 	</repositories>
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>central</id>
-			<url>http://repo1.maven.org/maven2/</url>
+			<id>alimaven-plugins</id>
+			<url>https://maven.aliyun.com/repository/public</url>
 		</pluginRepository>
 	</pluginRepositories>
 
